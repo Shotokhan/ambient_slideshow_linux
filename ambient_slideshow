@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Change the working directory to the directory where the script is located
+cd "$(dirname "$0")"
+
+echo $(pwd)
+
+# Check if the user provided a tag
+if [ $# -eq 0 ]
+then
+  echo "Usage: $0 <search_tag>"
+  exit 1
+fi
+
+SEARCH_TAG="$1"
+IMAGE_DIR="./downloaded_images"
+SCRIPT_PATH="./download_images.py"  # Path to your Python script
+
+# Ensure the image directory exists
+mkdir -p $IMAGE_DIR
+
+# Start the Python script in the background
+python $SCRIPT_PATH $SEARCH_TAG &
+
+# Get the PID of the Python script to terminate it later
+PYTHON_PID=$!
+
+# Wait for the script to get the images
+echo "Downloading first bucket of images..."
+sleep 30
+
+# Start FEH to display the images
+echo "Press 'f' to toggle full screen"
+feh --recursive --randomize --auto-zoom -R 300 --slideshow-delay 10 $IMAGE_DIR
+
+# Optional: Terminate the Python script when FEH exits
+kill $PYTHON_PID
+
+rm -rf $IMAGE_DIR
